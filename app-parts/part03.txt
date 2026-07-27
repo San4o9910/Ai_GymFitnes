@@ -1,0 +1,70 @@
+aleDateString('ru-RU',{day:'numeric',month:'long'})}</p></div>
+          <span class="badge ${complete?'cyan':''}">${complete?'Выполнено':w?`${w.duration} мин`:'Отдых'}</span>
+        </div>
+        <div class="grid-3" style="margin-top:14px">
+          <div class="metric card"><small>Текущий вес</small><strong>${latestWeight()} кг</strong></div>
+          <div class="metric card"><small>Цель недели</small><strong>+0,2–0,4</strong></div>
+          <div class="metric card"><small>Тренировок</small><strong>${weekSessions()}/3</strong></div>
+        </div>
+      </section>
+
+      <div class="dashboard-grid">
+        <div class="stack">
+          <section class="card">
+            <h3>Проверка готовности</h3><p class="muted" style="margin-top:5px">Оцени состояние перед тренировкой — приложение выберет обычный или облегчённый режим.</p>
+            <div class="quick-check">
+              ${rangeRow('energy','Энергия',state.check.energy)}
+              ${rangeRow('sleep','Сон',state.check.sleep)}
+              ${rangeRow('work','Нагрузка',state.check.work)}
+            </div>
+            <div class="advice ${adv.mode==='full'?'':adv.mode}" style="margin-top:14px"><strong>${adv.title}</strong><div class="muted" style="margin-top:5px">${adv.text}</div></div>
+          </section>
+
+          ${w?`<section class="card">
+            <div class="section-head" style="margin:0 0 10px"><div><h2>План на сегодня</h2><div class="muted">${w.exercises.length} блоков · ${w.duration} минут</div></div></div>
+            <div class="exercise-list">${w.exercises.slice(0,5).map(([id,sets])=>exercisePreview(id,sets)).join('')}</div>
+            ${w.exercises.length>5?`<div class="muted" style="text-align:center;margin:12px 0">+ ещё ${w.exercises.length-5}</div>`:''}
+            <button class="btn primary full" data-start="${wid}" ${complete?'disabled style="opacity:.55"':''}>${complete?'Тренировка завершена':'Начать тренировку'}</button>
+            ${adv.mode==='light'?`<button class="btn secondary full" style="margin-top:8px" data-start-light="${wid}">Запустить облегчённую</button>`:''}
+          </section>`:`<section class="card"><div class="safety"><div class="safety-icon">↻</div><div><h3>День восстановления</h3><p class="muted">5–10 минут мобильности, спокойная прогулка и полноценное питание. Не нужно добавлять тяжёлую тренировку.</p><button class="btn secondary" data-open-workout="M">Открыть мобильность</button></div></div></section>`}
+        </div>
+
+        <div class="stack">
+          <section class="card">
+            <h3>Правила безопасности</h3>
+            <div class="safety" style="margin-top:12px"><div class="safety-icon">!</div><div class="muted">Не тренируйся натощак, при выраженном недосыпе или обезвоживании. После тяжёлого подхода не останавливайся резко.</div></div>
+            <button class="btn danger full" style="margin-top:12px" data-stop-help>Что делать при головокружении</button>
+          </section>
+          <section class="card">
+            <h3>Сегодня по питанию</h3>
+            <div class="profile-line"><span>До тренировки</span><b>Банан + хлеб/мёд</b></div>
+            <div class="profile-line"><span>После тренировки</span><b>Полный завтрак</b></div>
+            <div class="profile-line"><span>11:00</span><b>1 порция гейнера</b></div>
+            <div class="profile-line"><span>Вода</span><b>2–2,5 л</b></div>
+          </section>
+        </div>
+      </div>
+    </div>`;
+}
+
+function rangeRow(key,label,val){ return `<div class="range-row"><label for="${key}">${label}</label><input id="${key}" data-check="${key}" type="range" min="1" max="10" value="${val}"><output>${val}</output></div>`; }
+function exercisePreview(id,sets){ const e=exercises[id]; return `<div class="exercise-main" style="padding:8px 0"><div class="exercise-thumb">${svgIcon(e.visual)}</div><div><b>${e.name}</b><div class="exercise-meta">${sets} подх. · ${e.reps} · отдых ${e.rest?e.rest+' сек':'—'}</div></div><button class="mini-btn" data-tech="${id}">Техника</button></div>`; }
+
+function renderSchedule(){
+  const week=currentWeek();
+  const start=dateOnly(state.programStart); start.setDate(start.getDate()+(week-1)*7-start.getDay()+1);
+  const days=[1,2,3,4,5,6,0].map((dow,i)=>{ const d=new Date(start); d.setDate(start.getDate()+i); const iso=d.toISOString().slice(0,10); const wid=scheduleMap[dow]; const w=wid?workouts[wid]:null; const done=wid&&sessionFor(iso,wid); const isToday=iso===todayISO();
+    return `<section class="card day-card ${isToday?'today':''} ${done?'done':''}"><div class="day-number">${d.getDate()}</div><div><div class="muted" style="font-size:12px">${dayNames[dow]}</div><h3>${w?w.title:'Полный отдых'}</h3><div class="exercise-meta">${w?`${w.subtitle} · ${w.duration} мин`:'Сон, еда, восстановление'}</div></div>${w?`<button class="mini-btn" data-open-workout="${wid}">${done?'✓':'Открыть'}</button>`:''}</section>`;
+  }).join('');
+  app.innerHTML=`<div class="section-head"><div><h2>Расписание</h2><div class="muted">Неделя ${week} · Пн / Ср / Чт обязательные</div></div><span class="badge">07:00</span></div><div class="stack">${days}</div>
+  <section class="card" style="margin-top:14px"><h3>Как меняется программа</h3><div class="table-wrap" style="margin-top:12px"><table><thead><tr><th>Недели</th><th>Режим</th><th>Задача</th></tr></thead><tbody><tr><td>1–3</td><td>Адаптация</td><td>2–3 подхода, 3–4 повтора в запасе</td></tr><tr><td>4</td><td>Облегчение</td><td>Примерно половина подходов</td></tr><tr><td>5–8</td><td>Рост</td><td>Постепенно добавлять повторы и вес</td></tr><tr><td>9</td><td>Облегчение</td><td>Вес −10–15%, подходы −30–40%</td></tr><tr><td>10–11</td><td>Закрепление</td><td>Базовые 6–10, вспомогательные 10–15</td></tr><tr><td>12</td><td>Оценка</td><td>Сравнить повторения без максимума</td></tr></tbody></table></div></section>`;
+}
+
+function renderWorkout(workoutId, light=false){
+  const w=workouts[workoutId];
+  const items=(light?w.exercises.slice(0,5):w.exercises).map(([id,sets],idx)=>{ const e=exercises[id]; const actualSets=light&&id!=='warmup'?Math.min(2,sets):sets; const key=`${todayISO()}_${workoutId}_${id}`; const logs=state.setLogs[key]||[];
+    return `<section class="card exercise-card" data-ex-card="${id}">
+      <div class="exercise-main"><div class="exercise-thumb">${svgIcon(e.visual)}</div><div><h3>${idx+1}. ${e.name}</h3><div class="exercise-meta">${actualSets} × ${e.reps} · RIR ${e.rir} · ${e.rest?e.rest+' сек отдыха':'без таймера'}</div></div><div class="exercise-actions"><button class="mini-btn" data-tech="${id}">Пример</button><button class="mini-btn" data-toggle-detail="${id}">Подробнее</button></div></div>
+      <div class="exercise-detail"><div class="chips"><span class="chip">${e.muscles}</span>${e.substitute?`<span class="chip">Замена: ${e.substitute}</span>`:''}</div>
+        ${id==='warmup'||id==='cardio'||id==='mobility'?`<ul class="tech-list">${e.tips.map(x=>`<li>${x}</li>`).join('')}</ul><button class="btn secondary full" data-complete-simple="${workoutId}|${id}">Отметить выполненным</button>`:
+        `<div class="set-grid"><b>№</b><b>Вес, кг</b><b>Повторы</b><b>✓</b>${Array.from({length:actualSets},(_,i)=>{const l=logs[i]||{};return `<span>${i+1}</span><input data-set-weight="${key}|${i}" type="number" inputmode="decimal" min="0" step="0.5" value="${l.weight??''}" placeholder="—"><input data-set-reps="${key}|${i}" type="number" inputmode="numeric" min="0" max="99" value="${l.reps??''}" placeholder="${String(e.reps).match(/\d+/)?.[0]||'

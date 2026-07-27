@@ -1,0 +1,77 @@
+name: Verify SportForma build
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'app-parts/**'
+      - 'workout-flow-parts/**'
+      - 'library-media-patch.js'
+      - 'loader.js'
+      - 'index.html'
+      - 'styles.css'
+      - 'workout-flow.css'
+      - 'library-media.css'
+      - 'sw.js'
+      - '.github/workflows/verify-app.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Reconstruct and parse JavaScript
+        shell: bash
+        run: |
+          set -euo pipefail
+          node <<'NODE'
+          const fs = require('fs');
+          const readParts = (dir) => fs.readdirSync(dir).filter(n => /^part\d+\.txt$/.test(n)).sort().map(n => fs.readFileSync(`${dir}/${n}`, 'utf8')).join('');
+          const main = readParts('app-parts');
+          const media = fs.readFileSync('library-media-patch.js', 'utf8');
+          const flowEncoded = readParts('workout-flow-parts');
+          const flow = Buffer.from(flowEncoded, 'base64').toString('utf8');
+          const combined = `${main}\n${media}\n${flow}`;
+          new Function(combined);
+          const required = [
+            'SportFormaHistoryDB',
+            'indexedDB.open',
+            'Начать упражнение',
+            'Завершить упражнение',
+            'История тренировок',
+            'totalSets',
+            'volume'
+          ];
+          for (const token of required) {
+            if (!combined.includes(token)) throw new Error(`Missing required token: ${token}`);
+          }
+          fs.mkdirSync('verification', { recursive: true });
+          fs.writeFileSync('verification/status.json', JSON.stringify({
+            ok: true,
+            verifiedAt: new Date().toISOString(),
+            mainBytes: Buffer.byteLength(main),
+            mediaBytes: Buffer.byteLength(media),
+            workoutFlowBytes: Buffer.byteLength(flow),
+            workoutFlowParts: fs.readdirSync('workout-flow-parts').filter(n => /^part\d+\.txt$/.test(n)).length
+          }, null, 2) + '\n');
+          console.log('SportForma syntax and required workflow tokens: PASS');
+          NODE
+
+      - name: Commit verification report
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add verification/status.json
+          if git diff --cached --quiet; then
+            echo 'Verification report unchanged'
+          else
+            git commit -m 'Record successful SportForma build verification'
+            git push
+          fi

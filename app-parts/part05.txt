@@ -1,0 +1,49 @@
+tart.setDate(start.getDate()-6); const rows=state.weights.filter(x=>{const d=dateOnly(x.date);return d>=start&&d<=end;}); return rows.length?rows.reduce((a,b)=>a+b.value,0)/rows.length:null; }
+function previousWeeklyAverage(){ return weeklyAverage(1); }
+function weekSessions(){ const now=new Date(); const start=new Date(now); start.setDate(now.getDate()-((now.getDay()+6)%7)); return state.sessions.filter(s=>dateOnly(s.date)>=start&&!workouts[s.workoutId]?.recovery).length; }
+function drawWeightChart(){
+  const c=document.getElementById('weightChart'); if(!c)return; const ctx=c.getContext('2d'); const W=c.width,H=c.height; ctx.clearRect(0,0,W,H); ctx.strokeStyle='#22352b';ctx.lineWidth=1;for(let i=1;i<5;i++){ctx.beginPath();ctx.moveTo(30,i*H/5);ctx.lineTo(W-14,i*H/5);ctx.stroke();}
+  const data=state.weights.slice(-20); if(data.length<1){ctx.fillStyle='#9caf9f';ctx.font='15px sans-serif';ctx.fillText('Нет данных — добавь первое измерение',30,H/2);return;}
+  const vals=data.map(x=>x.value), min=Math.min(...vals)-.5,max=Math.max(...vals)+.5,range=Math.max(1,max-min); const pts=data.map((x,i)=>({x:30+i*(W-50)/Math.max(1,data.length-1),y:H-25-(x.value-min)/range*(H-50)}));
+  ctx.strokeStyle='#b9ff4c';ctx.lineWidth=4;ctx.beginPath();pts.forEach((p,i)=>i?ctx.lineTo(p.x,p.y):ctx.moveTo(p.x,p.y));ctx.stroke();ctx.fillStyle='#5de6d2';pts.forEach(p=>{ctx.beginPath();ctx.arc(p.x,p.y,5,0,Math.PI*2);ctx.fill();});
+  ctx.fillStyle='#9caf9f';ctx.font='12px sans-serif';ctx.fillText(min.toFixed(1),2,H-25);ctx.fillText(max.toFixed(1),2,18);
+}
+
+function renderLibrary(filter='Все'){
+  const groups=['Все','Грудь','Спина','Ноги','Плечи','Руки','Корпус','Выносливость','Восстановление'];
+  const rows=Object.entries(exercises).filter(([,e])=>filter==='Все'||e.group===filter).map(([id,e])=>`<section class="card exercise-card"><div class="exercise-main"><div class="exercise-thumb">${svgIcon(e.visual)}</div><div><h3>${e.name}</h3><div class="exercise-meta">${e.group} · ${e.muscles}</div></div><button class="mini-btn" data-tech="${id}">Техника</button></div></section>`).join('');
+  app.innerHTML=`<div class="section-head"><div><h2>Библиотека упражнений</h2><div class="muted">Схема, подсказки, ошибки и безопасная замена</div></div></div><div class="library-filter">${groups.map(g=>`<button class="btn ${g===filter?'primary':'secondary'}" data-filter="${g}">${g}</button>`).join('')}</div><div class="exercise-list" style="margin-top:12px">${rows}</div>
+  <section class="card source-box" style="margin-top:14px"><b>Открытые примеры</b><p>Для каждого упражнения есть ссылка на поиск свободно лицензированных материалов в Wikimedia Commons. Дополнительно указана открытая база упражнений wger. Схематичные SVG внутри приложения созданы специально для этого интерфейса и работают без интернета.</p></section>`;
+  document.querySelectorAll('[data-filter]').forEach(b=>b.onclick=()=>{renderLibrary(b.dataset.filter);bindCommon();});
+}
+
+function renderSettings(){
+  app.innerHTML=`<div class="section-head"><div><h2>Профиль и данные</h2><div class="muted">Программа уже заполнена твоими исходными данными</div></div></div>
+  <section class="card"><h3>Профиль</h3><div style="margin-top:10px">${Object.entries({Возраст:`${profile.age} лет`,Рост:`${profile.height} см`,'Стартовый вес':`${profile.startWeight} кг`,'Ориентир':`${profile.markerWeight} кг`,'Работа':profile.work,'Тренировки':profile.days,'Время':profile.workoutTime,'Цель':profile.goal}).map(([k,v])=>`<div class="profile-line"><span>${k}</span><b>${v}</b></div>`).join('')}</div></section>
+  <section class="card" style="margin-top:14px"><h3>Старт программы</h3><p class="muted">Дата нужна для автоматического расчёта недели и разгрузочных периодов.</p><div class="grid-2"><input type="date" id="programStart" value="${state.programStart}"><button class="btn primary" id="saveStart">Сохранить</button></div></section>
+  <section class="card" style="margin-top:14px"><h3>Резервная копия</h3><p class="muted">Экспортируй прогресс в JSON. Файл можно хранить отдельно и импортировать после смены телефона или браузера.</p><div class="grid-2"><button class="btn secondary" id="exportData">Экспорт</button><label class="btn secondary" style="cursor:pointer">Импорт<input type="file" id="importData" accept="application/json" hidden></label></div></section>
+  <section class="card" style="margin-top:14px"><h3>Сброс</h3><p class="muted">Удалит только локальные отметки, вес и историю. Сама программа останется.</p><button class="btn danger full" id="resetData">Сбросить прогресс</button></section>
+  <section class="card source-box" style="margin-top:14px"><b>Источники открытых примеров</b><p><a href="https://github.com/wger-project/wger" target="_blank" rel="noopener">wger — open-source база тренировок</a><br><a href="https://commons.wikimedia.org/wiki/Commons:Welcome" target="_blank" rel="noopener">Wikimedia Commons — свободно лицензированные медиа</a></p></section>`;
+  document.getElementById('saveStart').onclick=()=>{state.programStart=document.getElementById('programStart').value||todayISO();saveState();toast('Дата сохранена');render();};
+  document.getElementById('exportData').onclick=exportData;
+  document.getElementById('importData').onchange=importData;
+  document.getElementById('resetData').onclick=()=>{if(confirm('Удалить весь локальный прогресс?')){state=defaultState();saveState();render();}};
+}
+
+function bindCommon(){
+  document.querySelectorAll('[data-tech]').forEach(b=>b.onclick=()=>showTechnique(b.dataset.tech));
+  document.querySelectorAll('[data-start]').forEach(b=>b.onclick=()=>renderWorkout(b.dataset.start,false));
+  document.querySelectorAll('[data-start-light]').forEach(b=>b.onclick=()=>renderWorkout(b.dataset.startLight,true));
+  document.querySelectorAll('[data-open-workout]').forEach(b=>b.onclick=()=>renderWorkout(b.dataset.openWorkout,false));
+  document.querySelectorAll('[data-check]').forEach(i=>i.oninput=()=>{state.check[i.dataset.check]=Number(i.value);i.nextElementSibling.value=i.value;saveState();const a=modeAdvice();const box=document.querySelector('.advice');if(box){box.className='advice '+(a.mode==='full'?'':a.mode);box.innerHTML=`<strong>${a.title}</strong><div class="muted" style="margin-top:5px">${a.text}</div>`;}});
+  document.querySelectorAll('[data-stop-help]').forEach(b=>b.onclick=showSafety);
+}
+
+function showTechnique(id){
+  const e=exercises[id]; const q=encodeURIComponent(e.source||e.name);
+  modalContent.innerHTML=`<h2 id="modalTitle" style="padding-right:42px">${e.name}</h2><div class="muted">${e.muscles} · ${e.reps}</div>
+  <div class="tech-frames"><div class="tech-frame">${svgIcon(e.visual,0)}<small>Старт</small></div><div class="tech-frame">${svgIcon(e.visual,1)}<small>Рабочая позиция</small></div></div>
+  <h3>Как выполнять</h3><ol class="tech-list">${e.tips.map(x=>`<li>${x}</li>`).join('')}</ol>
+  <h3>Частые ошибки</h3><ul class="tech-list">${e.mistakes.map(x=>`<li>${x}</li>`).join('')}</ul>
+  ${e.substitute?`<div class="advice"><strong>Безопасная замена</strong><div class="muted" style="margin-top:4px">${e.substitute}</div></div>`:''}
+  <div class="source-box" style="margin-top:14px"><b>Свободные примеры</b><p>Иллюстрация выше — схематичная подсказка. Для фото и видео техники открой поиск свободно лицензированных материалов.</p><div class="grid-2"><a class="btn secondary" target="_blank" rel="noopener" href="https://commons.wikimedia.org/w/index.php?search=${q}&title=Special:MediaSearch&type=image">Wikimedia Commons</a><a class="btn s

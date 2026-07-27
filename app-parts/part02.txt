@@ -1,0 +1,78 @@
+: первые 4 упражнения, по 2 подхода, вес на 10–15% легче.'};
+  return {mode:'full',title:'Полная тренировка',text:'Самочувствие подходит для обычного плана. Оставляй 2–4 повтора в запасе.'};
+}
+
+function svgIcon(type, phase=0){
+  const c='#b9ff4c', m='#5de6d2', s='#dce8df', dim='#365046';
+  const head=(x,y)=>`<circle cx="${x}" cy="${y}" r="7" fill="${s}"/>`;
+  const line=(x1,y1,x2,y2,col=s,w=5)=>`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${col}" stroke-width="${w}" stroke-linecap="round"/>`;
+  let body='';
+  switch(type){
+    case 'benchpress': {
+      const y=phase?38:48; body=`${line(18,76,82,76,dim,5)}${line(30,76,26,92,dim,5)}${line(70,76,74,92,dim,5)}${head(35,61)}${line(40,64,66,70)}${line(48,66,48,y,c)}${line(65,69,66,y,c)}${line(42,y,54,y,m,4)}${line(60,y,72,y,m,4)}`; break; }
+    case 'legpress': {
+      const p=phase?74:60; body=`${line(78,20,92,84,dim,6)}${line(16,82,48,82,dim,6)}${head(30,58)}${line(35,62,54,72)}${line(54,72,p,58,c)}${line(p,58,82,52,c)}${line(76,44,90,44,m,6)}`; break; }
+    case 'row': case 'seatedrow': case 'trxrow': {
+      const hand=phase?55:72; body=`${head(30,35)}${line(34,42,48,65)}${line(48,65,58,88)}${line(48,65,35,88)}${line(40,50,hand,48,c)}${line(hand,48,86,48,m,4)}${line(86,22,86,84,dim,4)}`; break; }
+    case 'hinge': {
+      body=phase?`${head(38,40)}${line(42,47,58,65)}${line(58,65,53,90)}${line(58,65,73,88)}${line(45,54,42,77,c)}${line(42,77,34,90,m,5)}`:`${head(50,28)}${line(50,36,50,62)}${line(50,62,42,90)}${line(50,62,64,90)}${line(48,45,38,68,c)}${line(38,68,34,90,m,5)}`; break; }
+    case 'pulldown': {
+      const y=phase?54:35; body=`${head(50,45)}${line(50,52,50,75)}${line(50,75,38,92)}${line(50,75,63,92)}${line(47,57,30,y,c)}${line(53,57,70,y,c)}${line(23,y,77,y,m,4)}${line(50,10,50,y,dim,3)}`; break; }
+    case 'pallof': {
+      const x=phase?70:55; body=`${head(45,26)}${line(45,34,45,63)}${line(45,63,34,90)}${line(45,63,58,90)}${line(45,45,x,45,c)}${line(x,45,88,45,m,4)}${line(88,20,88,80,dim,4)}`; break; }
+    case 'machinepress': {
+      const x=phase?78:60; body=`${head(35,32)}${line(35,40,35,68)}${line(35,68,50,90)}${line(35,68,22,90)}${line(36,48,x,48,c)}${line(x,38,x,58,m,5)}${line(24,72,52,72,dim,5)}`; break; }
+    case 'shoulderpress': {
+      const y=phase?18:38; body=`${head(50,36)}${line(50,44,50,70)}${line(50,70,38,92)}${line(50,70,63,92)}${line(47,48,32,y,c)}${line(53,48,68,y,c)}${line(24,y,40,y,m,5)}${line(60,y,76,y,m,5)}`; break; }
+    case 'lateral': {
+      const y=phase?45:63; body=`${head(50,25)}${line(50,33,50,65)}${line(50,65,38,92)}${line(50,65,63,92)}${line(48,42,22,y,c)}${line(52,42,78,y,c)}${line(18,y,25,y,m,5)}${line(75,y,82,y,m,5)}`; break; }
+    case 'curl': {
+      const y=phase?42:70; body=`${head(50,25)}${line(50,33,50,65)}${line(50,65,38,92)}${line(50,65,63,92)}${line(47,43,36,55,c)}${line(36,55,34,y,c)}${line(53,43,64,55,c)}${line(64,55,66,y,c)}${head(34,y)}${head(66,y)}`; break; }
+    case 'pushdown': {
+      const y=phase?73:50; body=`${head(50,24)}${line(50,32,50,64)}${line(50,64,38,92)}${line(50,64,62,92)}${line(48,43,38,50,c)}${line(52,43,62,50,c)}${line(38,50,38,y,c)}${line(62,50,62,y,c)}${line(50,10,50,38,dim,3)}`; break; }
+    case 'sideplank': body=`${head(24,55)}${line(31,58,72,69,c,6)}${line(72,69,88,78,c,6)}${line(36,60,30,82,s,5)}${line(72,69,56,88,s,5)}${line(16,88,92,88,dim,3)}`; break;
+    case 'squat': {
+      body=phase?`${head(50,35)}${line(50,43,50,65)}${line(50,65,32,70,c)}${line(32,70,25,90,c)}${line(50,65,69,70,c)}${line(69,70,78,90,c)}${line(38,49,62,49,m,5)}`:`${head(50,22)}${line(50,30,50,61)}${line(50,61,38,92,c)}${line(50,61,63,92,c)}${line(38,38,62,38,m,5)}`; break; }
+    case 'hipthrust': {
+      body=phase?`${line(15,72,40,72,dim,5)}${head(32,56)}${line(38,60,62,60,c,6)}${line(62,60,78,82,c,6)}${line(62,60,52,82,c,6)}`:`${line(15,72,40,72,dim,5)}${head(32,56)}${line(38,60,60,75,c,6)}${line(60,75,78,88,c,6)}${line(60,75,50,88,c,6)}`; break; }
+    case 'legcurl': {
+      const y=phase?50:78; body=`${line(16,52,74,52,dim,5)}${head(25,40)}${line(31,45,58,52,c,6)}${line(58,52,76,y,c,6)}${line(74,y,88,y,m,5)}`; break; }
+    case 'stepup': {
+      const y=phase?40:70; body=`${line(56,70,92,70,dim,6)}${line(56,70,56,92,dim,6)}${head(36,y-18)}${line(36,y-10,40,y+16,c)}${line(40,y+16,62,70,c)}${line(40,y+16,28,90,c)}${line(36,y,23,y+18,s,5)}`; break; }
+    case 'calf': {
+      const y=phase?82:90; body=`${head(50,22)}${line(50,30,50,61)}${line(50,61,38,y,c)}${line(50,61,63,y,c)}${line(26,92,76,92,dim,4)}${line(38,y,44,92,m,4)}${line(63,y,68,92,m,4)}`; break; }
+    case 'deadbug': {
+      body=phase?`${head(25,58)}${line(32,60,55,60,c,6)}${line(55,60,78,45,c,6)}${line(55,60,78,78,c,6)}${line(37,58,22,38,s,5)}`:`${head(25,58)}${line(32,60,55,60,c,6)}${line(55,60,66,42,c,6)}${line(55,60,66,80,c,6)}${line(37,58,28,40,s,5)}`; break; }
+    case 'facepull': {
+      const x=phase?47:65; body=`${head(40,30)}${line(40,38,40,68)}${line(40,68,28,92)}${line(40,68,53,92)}${line(42,44,x,38,c)}${line(x,38,88,38,m,4)}${line(88,16,88,82,dim,4)}`; break; }
+    case 'sled': body=`${head(30,30)}${line(34,38,48,60,c,6)}${line(48,60,35,90,c,6)}${line(48,60,65,87,c,6)}${line(42,48,72,44,s,5)}${line(72,38,86,38,m,6)}${line(86,38,90,72,m,6)}${line(78,72,94,72,m,6)}`; break;
+    case 'pushup': body=`${head(23,55)}${line(30,58,72,68,c,6)}${line(72,68,90,76,c,6)}${line(39,60,34,83,s,5)}${line(65,67,62,86,s,5)}${line(16,88,94,88,dim,3)}`; break;
+    case 'carry': body=`${head(50,22)}${line(50,30,50,62)}${line(50,62,38,92,c)}${line(50,62,63,92,c)}${line(48,40,30,61,s)}${line(52,40,70,61,s)}${line(22,61,38,61,m,7)}${line(62,61,78,61,m,7)}`; break;
+    case 'cardio': body=`${head(48,28)}${line(48,36,57,54,c,6)}${line(57,54,72,70,c,6)}${line(57,54,40,70,c,6)}${line(55,47,74,43,s,5)}<circle cx="34" cy="78" r="15" fill="none" stroke="${dim}" stroke-width="4"/><circle cx="76" cy="78" r="15" fill="none" stroke="${dim}" stroke-width="4"/>${line(34,78,57,54,m,4)}${line(57,54,76,78,m,4)}${line(34,78,76,78,m,4)}`; break;
+    case 'mobility': body=`${head(50,24)}${line(50,32,50,58,c,6)}${line(50,58,33,84,c,6)}${line(50,58,69,84,c,6)}${line(48,40,25,54,s,5)}${line(52,40,78,26,s,5)}<path d="M18 70 Q50 96 84 70" fill="none" stroke="${m}" stroke-width="3" stroke-dasharray="5 5"/>`; break;
+    default: body=`${head(50,22)}${line(50,30,50,62,c,6)}${line(50,62,38,92,c,6)}${line(50,62,63,92,c,6)}${line(50,42,28,58,s,5)}${line(50,42,72,58,s,5)}`;
+  }
+  return `<svg viewBox="0 0 100 100" role="img" aria-label="Схема упражнения"><rect width="100" height="100" rx="18" fill="#0b1712"/>${body}</svg>`;
+}
+
+function render(){
+  document.querySelectorAll('.nav-item').forEach(b=>b.classList.toggle('active',b.dataset.route===state.route));
+  if(state.route==='today') renderToday();
+  else if(state.route==='schedule') renderSchedule();
+  else if(state.route==='progress') renderProgress();
+  else if(state.route==='library') renderLibrary();
+  else renderSettings();
+  bindCommon();
+}
+
+function renderToday(){
+  const wid=getTodayWorkout();
+  const w=wid?workouts[wid]:null;
+  const adv=modeAdvice();
+  const week=currentWeek();
+  const complete=wid && sessionFor(todayISO(),wid);
+  app.innerHTML=`
+    <div class="stack">
+      <section class="card hero">
+        <div class="hero-top">
+          <div><span class="badge">Неделя ${week} из 12</span><h2 style="margin-top:12px">${w?`${w.title}: ${w.subtitle}`:'Сегодня восстановление'}</h2><p class="muted">${dayNames[new Date().getDay()]}, ${new Date().toLoc

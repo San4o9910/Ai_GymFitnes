@@ -1,0 +1,79 @@
+name: Diagnose SportForma build
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'app-parts/**'
+      - 'workout-flow-parts/**'
+      - 'library-media-patch.js'
+      - 'loader.js'
+      - 'index.html'
+      - 'styles.css'
+      - 'workout-flow.css'
+      - 'library-media.css'
+      - 'sw.js'
+      - '.github/workflows/diagnose-app.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Diagnose assembled application
+        shell: bash
+        run: |
+          node <<'NODE'
+          const fs = require('fs');
+          const report = { ok: false, checkedAt: new Date().toISOString(), errors: [], checks: {} };
+          try {
+            const readParts = (dir) => fs.readdirSync(dir)
+              .filter(name => /^part\d+\.txt$/.test(name))
+              .sort()
+              .map(name => fs.readFileSync(`${dir}/${name}`, 'utf8'))
+              .join('');
+            const main = readParts('app-parts');
+            const media = fs.readFileSync('library-media-patch.js', 'utf8');
+            const flowEncoded = readParts('workout-flow-parts');
+            const flow = Buffer.from(flowEncoded, 'base64').toString('utf8');
+            const combined = `${main}\n${media}\n${flow}`;
+            new Function(combined);
+            const tokens = [
+              'SportFormaHistoryDB', 'indexedDB.open', 'Начать упражнение',
+              'Завершить упражнение', 'История тренировок', 'totalSets',
+              'totalReps', 'volume', 'hydrateTechniqueMedia'
+            ];
+            report.checks = Object.fromEntries(tokens.map(token => [token, combined.includes(token)]));
+            const missing = tokens.filter(token => !report.checks[token]);
+            if (missing.length) throw new Error(`Missing required tokens: ${missing.join(', ')}`);
+            report.ok = true;
+            report.mainBytes = Buffer.byteLength(main);
+            report.mediaBytes = Buffer.byteLength(media);
+            report.workoutFlowBytes = Buffer.byteLength(flow);
+            report.workoutFlowParts = fs.readdirSync('workout-flow-parts').filter(name => /^part\d+\.txt$/.test(name)).length;
+          } catch (error) {
+            report.errors.push(String(error && error.stack ? error.stack : error));
+          }
+          fs.mkdirSync('verification', { recursive: true });
+          fs.writeFileSync('verification/diagnostic.json', JSON.stringify(report, null, 2) + '\n');
+          console.log(JSON.stringify(report, null, 2));
+          NODE
+
+      - name: Commit diagnostic report
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add verification/diagnostic.json
+          if git diff --cached --quiet; then
+            echo 'Diagnostic report unchanged'
+          else
+            git commit -m 'Record SportForma build diagnostic'
+            git push
+          fi

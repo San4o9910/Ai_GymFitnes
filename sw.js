@@ -1,5 +1,6 @@
-const CACHE = 'sportforma-v1';
-const ASSETS = ['./','./index.html','./styles.css','./app.js','./manifest.webmanifest','./assets/icon.svg'];
+const CACHE = 'sportforma-v2';
+const PARTS = Array.from({ length: 7 }, (_, index) => `./app-parts/part${String(index).padStart(2, '0')}.txt`);
+const ASSETS = ['./','./index.html','./styles.css','./loader.js','./manifest.webmanifest','./assets/icon.svg', ...PARTS];
 self.addEventListener('install', event => event.waitUntil(caches.open(CACHE).then(c => c.addAll(ASSETS))));
 self.addEventListener('activate', event => event.waitUntil(caches.keys().then(keys => Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k))))));
 self.addEventListener('fetch', event => {

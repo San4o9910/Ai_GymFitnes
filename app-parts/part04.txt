@@ -1,0 +1,53 @@
+'}"><button class="check-set ${l.done?'done':''}" data-set-done="${key}|${i}" aria-label="Завершить подход">${l.done?'✓':'○'}</button>`}).join('')}</div>`}
+      </div>
+    </section>`;
+  }).join('');
+  app.innerHTML=`<div class="workout-bar"><div><b>${w.title}${light?' — облегчённая':''}</b><div class="muted" style="font-size:12px">${w.subtitle}</div></div><button class="mini-btn" data-exit-workout>Закрыть</button></div>
+  <div class="progress-track" style="margin-bottom:12px"><span id="workoutProgress" style="width:${workoutProgress(workoutId,light)}%"></span></div>
+  <div class="exercise-list">${items}</div>
+  <section class="card" style="margin-top:12px"><div class="timer"><div class="muted">Таймер отдыха</div><strong id="timerValue">01:30</strong><div class="timer-controls"><button class="mini-btn" data-timer="60">60 сек</button><button class="mini-btn" data-timer="90">90 сек</button><button class="mini-btn" data-timer="120">120 сек</button><button class="mini-btn" data-timer-stop>Стоп</button></div></div></section>
+  <button class="btn primary full" style="margin-top:12px" data-finish-workout="${workoutId}|${light?'1':'0'}">Завершить тренировку</button>`;
+  state.activeWorkout={workoutId,light}; saveState(); bindWorkout(workoutId,light);
+}
+
+function workoutProgress(workoutId,light){
+  const w=workouts[workoutId]; const exs=light?w.exercises.slice(0,5):w.exercises; let total=0,done=0;
+  exs.forEach(([id,sets])=>{ const actual=light&&id!=='warmup'?Math.min(2,sets):sets; total+=actual; const key=`${todayISO()}_${workoutId}_${id}`; done+=(state.setLogs[key]||[]).filter(x=>x.done).length; });
+  return total?Math.min(100,Math.round(done/total*100)):0;
+}
+
+let timerInterval=null, timerRemaining=90;
+function startTimer(seconds){ clearInterval(timerInterval); timerRemaining=seconds; updateTimer(); timerInterval=setInterval(()=>{timerRemaining--; updateTimer(); if(timerRemaining<=0){clearInterval(timerInterval);toast('Отдых закончен'); if(navigator.vibrate) navigator.vibrate([200,100,200]);}},1000); }
+function updateTimer(){ const el=document.getElementById('timerValue'); if(el) el.textContent=`${String(Math.floor(timerRemaining/60)).padStart(2,'0')}:${String(timerRemaining%60).padStart(2,'0')}`; }
+
+function bindWorkout(workoutId,light){
+  document.querySelectorAll('[data-toggle-detail]').forEach(b=>b.onclick=()=>b.closest('.exercise-card').classList.toggle('open'));
+  document.querySelectorAll('[data-set-weight]').forEach(i=>i.onchange=()=>setLogValue(i.dataset.setWeight,'weight',Number(i.value)));
+  document.querySelectorAll('[data-set-reps]').forEach(i=>i.onchange=()=>setLogValue(i.dataset.setReps,'reps',Number(i.value)));
+  document.querySelectorAll('[data-set-done]').forEach(b=>b.onclick=()=>{ const [key,idx]=b.dataset.setDone.split('|'); const arr=state.setLogs[key]||[]; arr[idx]={...(arr[idx]||{}),done:!(arr[idx]?.done)}; state.setLogs[key]=arr; saveState(); b.classList.toggle('done',arr[idx].done); b.textContent=arr[idx].done?'✓':'○'; const p=document.getElementById('workoutProgress'); if(p)p.style.width=workoutProgress(workoutId,light)+'%'; if(arr[idx].done) startTimer(exercises[key.split('_').pop()]?.rest||90); } );
+  document.querySelectorAll('[data-complete-simple]').forEach(b=>b.onclick=()=>{ const [,id]=b.dataset.completeSimple.split('|'); const key=`${todayISO()}_${workoutId}_${id}`; state.setLogs[key]=[{done:true}]; saveState(); b.textContent='✓ Выполнено'; document.getElementById('workoutProgress').style.width=workoutProgress(workoutId,light)+'%'; });
+  document.querySelectorAll('[data-timer]').forEach(b=>b.onclick=()=>startTimer(Number(b.dataset.timer)));
+  document.querySelector('[data-timer-stop]').onclick=()=>{clearInterval(timerInterval);timerRemaining=0;updateTimer();};
+  document.querySelector('[data-exit-workout]').onclick=()=>{state.activeWorkout=null;state.route='schedule';saveState();render();};
+  document.querySelector('[data-finish-workout]').onclick=()=>finishWorkout(workoutId,light);
+  bindCommon();
+}
+function setLogValue(token,field,value){ const [key,idx]=token.split('|'); const arr=state.setLogs[key]||[]; arr[idx]={...(arr[idx]||{}),[field]:value}; state.setLogs[key]=arr; saveState(); }
+function finishWorkout(workoutId,light){
+  if(!state.sessions.some(s=>s.date===todayISO()&&s.workoutId===workoutId)) state.sessions.push({date:todayISO(),workoutId,light,completedAt:new Date().toISOString()});
+  state.activeWorkout=null; saveState(); toast('Тренировка сохранена'); state.route='today'; render();
+}
+
+function renderProgress(){
+  const avg=weeklyAverage(); const prev=previousWeeklyAverage(); const delta=(avg&&prev)?(avg-prev).toFixed(2):'—';
+  app.innerHTML=`<div class="section-head"><div><h2>Прогресс</h2><div class="muted">Смотрим средние значения, а не случайные колебания</div></div><span class="badge">Неделя ${currentWeek()}</span></div>
+  <div class="grid-3"><section class="card metric"><small>Средний вес</small><strong>${avg?avg.toFixed(1):'—'} кг</strong></section><section class="card metric"><small>За неделю</small><strong>${delta==='—'?'—':(Number(delta)>=0?'+':'')+delta}</strong></section><section class="card metric"><small>Тренировок всего</small><strong>${state.sessions.filter(s=>!workouts[s.workoutId]?.recovery).length}</strong></section></div>
+  <section class="card" style="margin-top:14px"><div class="section-head" style="margin:0 0 10px"><div><h2>Вес</h2><div class="muted">Цель: +0,2–0,4 кг в неделю</div></div></div><canvas class="chart" id="weightChart" width="700" height="210"></canvas><div class="grid-2" style="margin-top:12px"><input type="number" step="0.1" min="40" max="140" id="newWeight" placeholder="Вес сегодня, кг"><button class="btn primary" id="addWeight">Добавить</button></div></section>
+  <section class="card" style="margin-top:14px"><h3>Последние измерения</h3>${state.weights.length?`<div class="table-wrap" style="margin-top:10px"><table><thead><tr><th>Дата</th><th>Вес</th><th></th></tr></thead><tbody>${[...state.weights].reverse().slice(0,12).map((x,i)=>`<tr><td>${fmtDate(x.date)}</td><td>${x.value.toFixed(1)} кг</td><td><button class="mini-btn" data-del-weight="${state.weights.length-1-i}">Удалить</button></td></tr>`).join('')}</tbody></table></div>`:'<div class="empty">Добавь первое взвешивание утром после туалета.</div>'}</section>
+  <section class="card" style="margin-top:14px"><h3>Выполненные тренировки</h3>${state.sessions.length?`<div class="stack" style="margin-top:10px">${[...state.sessions].reverse().slice(0,8).map(s=>`<div class="profile-line"><span>${fmtDate(s.date)}</span><b>${workouts[s.workoutId]?.title||s.workoutId}${s.light?' · лёгкая':''}</b></div>`).join('')}</div>`:'<div class="empty">Пока нет завершённых тренировок.</div>'}</section>`;
+  setTimeout(drawWeightChart,0);
+  document.getElementById('addWeight').onclick=()=>{const v=Number(document.getElementById('newWeight').value);if(!v)return toast('Введи вес');state.weights.push({date:todayISO(),value:v});state.weights.sort((a,b)=>a.date.localeCompare(b.date));saveState();renderProgress();bindCommon();};
+  document.querySelectorAll('[data-del-weight]').forEach(b=>b.onclick=()=>{state.weights.splice(Number(b.dataset.delWeight),1);saveState();renderProgress();bindCommon();});
+}
+function latestWeight(){ return state.weights.length?state.weights[state.weights.length-1].value.toFixed(1):profile.startWeight.toFixed(1); }
+function weeklyAverage(offset=0){ const end=new Date(); end.setDate(end.getDate()-offset*7); const start=new Date(end); s

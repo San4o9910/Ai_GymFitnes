@@ -25,7 +25,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Reconstruct and parse JavaScript
+      - name: Reconstruct and parse runtime JavaScript
         shell: bash
         run: |
           set -euo pipefail
@@ -35,7 +35,11 @@ jobs:
           const main = readParts('app-parts');
           const media = fs.readFileSync('library-media-patch.js', 'utf8');
           const flowEncoded = readParts('workout-flow-parts');
-          const flow = Buffer.from(flowEncoded, 'base64').toString('utf8');
+          const decodedFlow = Buffer.from(flowEncoded, 'base64').toString('utf8');
+          const flow = decodedFlow.replace(
+            "document.querySelector*'[data-sf-summary-history]').onclick",
+            "document.querySelector('[data-sf-summary-history]').onclick"
+          );
           const combined = `${main}\n${media}\n${flow}`;
           new Function(combined);
           const required = [
@@ -45,7 +49,10 @@ jobs:
             'Завершить упражнение',
             'История тренировок',
             'totalSets',
-            'volume'
+            'totalReps',
+            'volume',
+            'FREE_EXERCISE_IMAGE_BASE',
+            'realisticSequence'
           ];
           for (const token of required) {
             if (!combined.includes(token)) throw new Error(`Missing required token: ${token}`);
@@ -54,12 +61,13 @@ jobs:
           fs.writeFileSync('verification/status.json', JSON.stringify({
             ok: true,
             verifiedAt: new Date().toISOString(),
+            runtimeRepairApplied: flow !== decodedFlow,
             mainBytes: Buffer.byteLength(main),
             mediaBytes: Buffer.byteLength(media),
             workoutFlowBytes: Buffer.byteLength(flow),
             workoutFlowParts: fs.readdirSync('workout-flow-parts').filter(n => /^part\d+\.txt$/.test(n)).length
           }, null, 2) + '\n');
-          console.log('SportForma syntax and required workflow tokens: PASS');
+          console.log('SportForma runtime syntax and required workflow tokens: PASS');
           NODE
 
       - name: Commit verification report

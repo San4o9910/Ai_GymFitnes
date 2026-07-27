@@ -9,21 +9,25 @@
     return response.text();
   }))
     .then(async (chunks) => {
-      // Части исходного файла разделены в произвольных местах, иногда прямо
-      // внутри строк. Поэтому между ними нельзя вставлять перевод строки.
-      const source = chunks.join('');
-      new Function(source)();
+      // Части исходного файла могут быть разделены прямо внутри строки,
+      // поэтому объединяем их без каких-либо дополнительных символов.
+      const mainSource = chunks.join('');
 
-      // Дополнение библиотеки запускаем отдельно, чтобы его ошибка никогда
-      // не блокировала основное приложение.
+      // Дополнение библиотеки должно выполняться в той же области видимости,
+      // что и основной код. Иначе оно не видит exercises, svgIcon,
+      // renderLibrary и showTechnique.
+      let mediaPatch = '';
       try {
         const response = await fetch('library-media-patch.js', { cache: 'no-cache' });
         if (!response.ok) throw new Error(`Не удалось загрузить library-media-patch.js: ${response.status}`);
-        const patch = await response.text();
-        new Function(patch)();
+        mediaPatch = await response.text();
       } catch (error) {
         console.warn('Дополнительные примеры упражнений временно недоступны:', error);
       }
+
+      // Перевод строки добавляется только после полностью собранного mainSource.
+      // Это безопасно и позволяет патчу использовать переменные основного приложения.
+      new Function(`${mainSource}\n${mediaPatch}`)();
     })
     .catch((error) => {
       console.error(error);

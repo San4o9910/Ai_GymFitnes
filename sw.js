@@ -1,15 +1,18 @@
-const CACHE = 'sportforma-v8';
+const CACHE = 'sportforma-v9';
 const PARTS = Array.from({ length: 7 }, (_, index) => `./app-parts/part${String(index).padStart(2, '0')}.txt`);
+const FLOW_PARTS = Array.from({ length: 6 }, (_, index) => `./workout-flow-parts/part${String(index).padStart(2, '0')}.txt`);
 const ASSETS = [
   './',
   './index.html',
-  './styles.css?v=8',
-  './library-media.css?v=8',
-  './loader.js?v=8',
+  './styles.css?v=9',
+  './library-media.css?v=9',
+  './workout-flow.css?v=9',
+  './loader.js?v=9',
   './library-media-patch.js',
   './manifest.webmanifest',
   './assets/icon.svg',
-  ...PARTS
+  ...PARTS,
+  ...FLOW_PARTS
 ];
 
 self.addEventListener('install', event => {
@@ -43,7 +46,9 @@ self.addEventListener('fetch', event => {
     const freshFiles = event.request.mode === 'navigate' ||
       url.pathname.endsWith('/loader.js') ||
       url.pathname.endsWith('/library-media-patch.js') ||
-      url.pathname.includes('/app-parts/');
+      url.pathname.endsWith('/workout-flow.css') ||
+      url.pathname.includes('/app-parts/') ||
+      url.pathname.includes('/workout-flow-parts/');
 
     if (freshFiles) {
       event.respondWith(networkFirst(event.request));

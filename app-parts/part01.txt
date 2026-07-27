@@ -1,0 +1,64 @@
+st machine'},
+  legCurl: {name:'Сгибание ног в тренажёре', group:'Ноги', visual:'legcurl', muscles:'Задняя поверхность бедра', rest:75, reps:'10–15', rir:'2–3', tips:['Настрой валик над пятками','Таз прижат','Сгибай плавно','Не бросай вес обратно'], mistakes:['Отрывать таз','Делать рывок','Слишком короткая амплитуда'], substitute:'Сгибание ног с фитболом', source:'leg curl machine'},
+  stepUp: {name:'Подъём на платформу с опорой', group:'Ноги', visual:'stepup', muscles:'Бёдра, ягодицы, устойчивость', rest:90, reps:'8–10 на ногу', rir:'3', tips:['Поставь всю стопу на платформу','Поднимайся усилием верхней ноги','Держись за опору при необходимости','Опускайся контролируемо'], mistakes:['Отталкиваться нижней ногой','Слишком высокая платформа','Заваливать колено внутрь'], substitute:'Обратные выпады с опорой', source:'step up exercise'},
+  calfRaise: {name:'Подъём на носки', group:'Ноги', visual:'calf', muscles:'Икроножные', rest:60, reps:'12–15', rir:'2–3', tips:['Опусти пятки до растяжения','Поднимись максимально высоко','Задержись наверху','Не пружинь'], mistakes:['Короткая амплитуда','Слишком быстрый темп','Переносить вес на внешнюю часть стопы'], substitute:'Подъём на носки в жиме ногами', source:'standing calf raise'},
+  deadBug: {name:'Мёртвый жук', group:'Корпус', visual:'deadbug', muscles:'Пресс и стабилизация поясницы', rest:45, reps:'8 на сторону', rir:'Техника', tips:['Поясница мягко прижата к полу','Двигай противоположные руку и ногу','Выдыхай при разгибании','Уменьши амплитуду, если поясница отрывается'], mistakes:['Прогибать поясницу','Торопиться','Поднимать голову и напрягать шею'], substitute:'Жим Палофа', source:'dead bug core exercise'},
+  facePull: {name:'Тяга каната к лицу', group:'Спина', visual:'facepull', muscles:'Задние плечи и верх спины', rest:60, reps:'12–15', rir:'2–3', tips:['Канат на уровне лица','Тяни к вискам','Локти идут в стороны и назад','В конце разверни кисти наружу'], mistakes:['Прогибаться назад','Тянуть к груди','Поднимать плечи'], substitute:'Разведение рук в тренажёре', source:'face pull cable'},
+  sled: {name:'Толкание саней / спокойная гребля', group:'Выносливость', visual:'sled', muscles:'Всё тело', rest:120, reps:'20–30 сек', rir:'Умеренно', tips:['Держи корпус устойчиво','Работай короткими мощными шагами','Не доводи до закисления и тошноты','После подхода продолжай спокойно двигаться'], mistakes:['Спринтовать до отказа','Округлять спину','Резко останавливаться'], substitute:'Велотренажёр 30–45 секунд', source:'sled push exercise'},
+  pushup: {name:'Отжимания', group:'Грудь', visual:'pushup', muscles:'Грудь, плечи, трицепс, корпус', rest:60, reps:'8–12', rir:'2–3', tips:['Тело прямой линией','Ладони немного шире плеч','Локти примерно под 30–45°','Грудь движется к полу'], mistakes:['Провисать поясницей','Выставлять локти в стороны','Кивать головой'], substitute:'Отжимания от высокой опоры', source:'push up exercise'},
+  trxRow: {name:'Тяга TRX', group:'Спина', visual:'trxrow', muscles:'Спина, бицепс, корпус', rest:60, reps:'8–12', rir:'2–3', tips:['Тело остаётся прямым','Тяни грудь к рукоятям','Лопатки своди мягко','Чем горизонтальнее тело, тем тяжелее'], mistakes:['Провисать тазом','Тянуть подбородок','Поднимать плечи'], substitute:'Горизонтальная тяга блока', source:'suspension trainer row'},
+  farmer: {name:'Прогулка с гантелями', group:'Функциональная', visual:'carry', muscles:'Хват, корпус, плечи, ноги', rest:60, reps:'30–40 м', rir:'Умеренно', tips:['Стой ровно','Шагай спокойно','Плечи не поднимай к ушам','Дыши без задержки'], mistakes:['Наклоняться в сторону','Брать вес, который ломает осанку','Идти слишком быстро'], substitute:'Перенос одной гантели поочерёдно', source:'farmers carry exercise'},
+  cardio: {name:'Велосипед / дорожка', group:'Выносливость', visual:'cardio', muscles:'Сердечно-сосудистая система', rest:0, reps:'10–20 мин', rir:'Разговорный темп', tips:['Темп позволяет говорить предложениями','Начинай и заканчивай спокойно','Не гонись за пульсом любой ценой','После силовой не делай тяжёлые интервалы'], mistakes:['Резко останавливаться','Слишком высокая интенсивность','Делать кардио вместо восстановления'], substitute:'Спокойная прогулка', source:'stationary bicycle exercise'},
+  mobility: {name:'Мобильность 5–10 минут', group:'Восстановление', visual:'mobility', muscles:'Позвоночник, таз, голеностоп', rest:0, reps:'5–10 мин', rir:'Легко', tips:['Кошка-корова — 8 раз','Повороты грудного отдела — 8 на сторону','Растяжка сгибателей бедра — 30 сек','Ягодичный мост и птичья собака — по 8–12 раз'], mistakes:['Тянуться через боль','Делать резко','Превращать восстановление в тяжёлую тренировку'], source:'mobility routine'}
+};
+
+const workouts = {
+  A: {title:'Тренировка A', subtitle:'Всё тело', day:'Понедельник', duration:60, exercises:[
+    ['warmup',1],['legPress',3],['inclinePress',3],['chestRow',3],['rdl',2],['latPulldown',2],['pallof',2]
+  ]},
+  B: {title:'Тренировка B', subtitle:'Верх тела + кардио', day:'Среда', duration:60, exercises:[
+    ['warmup',1],['machinePress',3],['latPulldown',3],['seatedRow',3],['shoulderPress',2],['lateralRaise',2],['hammerCurl',2],['pushdown',2],['sidePlank',2],['cardio',1]
+  ]},
+  C: {title:'Тренировка C', subtitle:'Ноги, ягодицы, корпус', day:'Четверг', duration:60, exercises:[
+    ['warmup',1],['hackSquat',3],['hipThrust',3],['legCurl',3],['stepUp',2],['calfRaise',2],['deadBug',2],['facePull',2]
+  ]},
+  D: {title:'Тренировка D', subtitle:'Опциональная функциональная', day:'Суббота', duration:35, optional:true, exercises:[
+    ['warmup',1],['sled',3],['pushup',3],['trxRow',3],['stepUp',3],['farmer',3]
+  ]},
+  M: {title:'Мобильность', subtitle:'Восстановление', day:'Вторник / Пятница', duration:10, recovery:true, exercises:[['mobility',1]]}
+};
+
+const scheduleMap = {1:'A',2:'M',3:'B',4:'C',5:'M',6:'D',0:null};
+const dayNames = ['Воскресенье','Понедельник','Вторник','Среда','Четверг','Пятница','Суббота'];
+
+function defaultState(){
+  return {
+    version:1,
+    programStart: new Date().toISOString().slice(0,10),
+    route:'today',
+    check:{energy:7,sleep:7,work:5},
+    weights:[],
+    sessions:[],
+    setLogs:{},
+    settings:{defaultMode:'auto', notifications:false},
+    activeWorkout:null
+  };
+}
+let state = loadState();
+
+function loadState(){
+  try { return {...defaultState(), ...JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}')}; }
+  catch { return defaultState(); }
+}
+function saveState(){ try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch { window.__sportformaMemoryState = JSON.stringify(state); } }
+function todayISO(){ return new Date().toISOString().slice(0,10); }
+function dateOnly(s){ const d=new Date(s+'T12:00:00'); return d; }
+function dayDiff(a,b){ return Math.floor((dateOnly(a)-dateOnly(b))/86400000); }
+function currentWeek(){ return Math.max(1, Math.min(12, Math.floor(dayDiff(todayISO(),state.programStart)/7)+1)); }
+function fmtDate(s){ return dateOnly(s).toLocaleDateString('ru-RU',{day:'numeric',month:'short'}); }
+function getTodayWorkout(){ return scheduleMap[new Date().getDay()]; }
+function sessionFor(date, workoutId){ return state.sessions.find(s=>s.date===date && s.workoutId===workoutId); }
+function modeAdvice(){
+  const {energy,sleep,work}=state.check;
+  if(energy<=4 || sleep<=4) return {mode:'rest',title:'Сегодня лучше восстановление',text:'Прогулка и мобильность. Силовую перенеси по расписанию, не «отрабатывай» пропуск.'};
+  if(energy<=6 || sleep<=6 || work>=8) return {mode:'light',title:'Облегчённая версия',text:'30–40 минут

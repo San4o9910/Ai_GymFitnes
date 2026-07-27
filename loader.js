@@ -2,32 +2,39 @@
   const parts = Array.from({ length: 7 }, (_, index) =>
     `app-parts/part${String(index).padStart(2, '0')}.txt`
   );
+  const flowParts = Array.from({ length: 6 }, (_, index) =>
+    `workout-flow-parts/part${String(index).padStart(2, '0')}.txt`
+  );
 
-  Promise.all(parts.map(async (path) => {
+  const fetchText = async (path) => {
     const response = await fetch(path, { cache: 'no-cache' });
     if (!response.ok) throw new Error(`Не удалось загрузить ${path}: ${response.status}`);
     return response.text();
-  }))
+  };
+
+  Promise.all(parts.map(fetchText))
     .then(async (chunks) => {
-      // Части исходного файла могут быть разделены прямо внутри строки,
-      // поэтому объединяем их без каких-либо дополнительных символов.
+      // Исходные части иногда разделены прямо внутри строки.
       const mainSource = chunks.join('');
 
-      // Дополнение библиотеки должно выполняться в той же области видимости,
-      // что и основной код. Иначе оно не видит exercises, svgIcon,
-      // renderLibrary и showTechnique.
       let mediaPatch = '';
       try {
-        const response = await fetch('library-media-patch.js', { cache: 'no-cache' });
-        if (!response.ok) throw new Error(`Не удалось загрузить library-media-patch.js: ${response.status}`);
-        mediaPatch = await response.text();
+        mediaPatch = await fetchText('library-media-patch.js');
       } catch (error) {
         console.warn('Дополнительные примеры упражнений временно недоступны:', error);
       }
 
-      // Перевод строки добавляется только после полностью собранного mainSource.
-      // Это безопасно и позволяет патчу использовать переменные основного приложения.
-      new Function(`${mainSource}\n${mediaPatch}`)();
+      let workoutPatch = '';
+      try {
+        const encoded = (await Promise.all(flowParts.map(fetchText))).join('');
+        const bytes = Uint8Array.from(atob(encoded), char => char.charCodeAt(0));
+        workoutPatch = new TextDecoder('utf-8').decode(bytes);
+      } catch (error) {
+        console.warn('Пошаговый режим тренировки временно недоступен:', error);
+      }
+
+      // Оба дополнения выполняются в области видимости основного приложения.
+      new Function(`${mainSource}\n${mediaPatch}\n${workoutPatch}`)();
     })
     .catch((error) => {
       console.error(error);

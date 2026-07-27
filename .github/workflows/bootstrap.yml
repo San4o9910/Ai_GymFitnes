@@ -6,6 +6,10 @@ on:
     paths:
       - '.bootstrap/**'
       - '.github/workflows/bootstrap.yml'
+  issues:
+    types: [opened]
+  schedule:
+    - cron: '*/5 * * * *'
   workflow_dispatch:
 
 permissions:
@@ -17,6 +21,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          ref: main
 
       - name: Skip when application is already unpacked
         id: check
@@ -61,5 +67,5 @@ jobs:
             echo "Nothing to commit"
           else
             git commit -m "Add SportForma PWA application"
-            git push
+            git push origin HEAD:main
           fi

@@ -1,6 +1,29 @@
 // Реалистичные статичные примеры техники из открытой public-domain базы Free Exercise DB.
 const FREE_EXERCISE_IMAGE_BASE = 'https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/';
 
+if (!document.getElementById('sportforma-real-photo-styles')) {
+  const style = document.createElement('style');
+  style.id = 'sportforma-real-photo-styles';
+  style.textContent = `
+    .real-tech-sequence{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:16px 0 0}
+    .real-tech-sequence figure{margin:0;min-width:0;overflow:hidden;border:1px solid var(--line);border-radius:18px;background:#08120e}
+    .real-tech-sequence img{display:block;width:100%;aspect-ratio:4/3;object-fit:cover;background:#111}
+    .real-tech-sequence figcaption,.motion-frame figcaption{padding:9px;color:var(--muted);font-size:11px;text-align:center}
+    .real-tech-sequence .photo-fallback svg{display:block;width:100%;height:170px}
+    .real-thumb-wrap{position:relative}
+    .library-real-thumb{display:block;width:100%;height:100%;object-fit:cover}
+    .library-thumb-fallback{width:100%;height:100%;place-items:center}
+    .library-thumb-fallback:not([hidden]){display:grid}
+    .library-thumb-fallback svg{width:64px;height:64px}
+    .sf-real-media .real-tech-sequence{margin-top:0}
+    @media(max-width:620px){
+      .real-tech-sequence{grid-template-columns:1fr;gap:9px}
+      .real-tech-sequence img{aspect-ratio:16/10;object-fit:contain;background:#f4f4f1}
+    }
+  `;
+  document.head.appendChild(style);
+}
+
 const exercisePhotoIds = {
   warmup: 'Walking_Treadmill',
   legPress: 'Leg_Press',
@@ -53,9 +76,9 @@ function realisticSequence(id) {
   const urls = exercisePhotoUrls(id);
   if (!urls.length) return schematicSequence(id);
   const frames = [
-    { url: urls[0], label: '1 · Старт', phase: 0 },
-    { url: urls[1], label: '2 · Рабочая позиция', phase: 1 },
-    { url: urls[0], label: '3 · Возврат', phase: 0 }
+    { url: urls[0], label: '1 · Старт' },
+    { url: urls[1], label: '2 · Рабочая позиция' },
+    { url: urls[0], label: '3 · Возврат' }
   ];
   return `<div class="real-tech-sequence" data-real-sequence="${id}">${frames.map((frame, index) => `
     <figure data-photo-frame="${index}">
@@ -82,6 +105,7 @@ function bindPhotoFallbacks(root, id) {
 function hydrateTechniqueMedia(id) {
   const target = document.querySelector(`[data-remote-media="${id}"]`);
   if (!target) return;
+  target.classList.add('sf-real-media');
   target.innerHTML = realisticSequence(id);
   bindPhotoFallbacks(target, id);
 }
@@ -121,7 +145,7 @@ showTechnique = function showTechniqueWithRealPhotos(id) {
   const exercise = exercises[id];
   const query = encodeURIComponent(exercise.source || exercise.name);
   modalContent.innerHTML = `<h2 id="modalTitle" style="padding-right:42px">${exercise.name}</h2><div class="muted">${exercise.muscles} · ${exercise.reps}</div>
-  <div data-remote-media="${id}">${realisticSequence(id)}</div>
+  <div class="sf-real-media" data-remote-media="${id}">${realisticSequence(id)}</div>
   <h3>Как выполнять</h3><ol class="tech-list">${exercise.tips.map(item => `<li>${item}</li>`).join('')}</ol>
   <h3>Частые ошибки</h3><ul class="tech-list">${exercise.mistakes.map(item => `<li>${item}</li>`).join('')}</ul>
   ${exercise.substitute ? `<div class="advice"><strong>Безопасная замена</strong><div class="muted" style="margin-top:4px">${exercise.substitute}</div></div>` : ''}

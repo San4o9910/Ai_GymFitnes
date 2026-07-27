@@ -1,13 +1,13 @@
-const CACHE = 'sportforma-v9';
+const CACHE = 'sportforma-v10';
 const PARTS = Array.from({ length: 7 }, (_, index) => `./app-parts/part${String(index).padStart(2, '0')}.txt`);
 const FLOW_PARTS = Array.from({ length: 6 }, (_, index) => `./workout-flow-parts/part${String(index).padStart(2, '0')}.txt`);
 const ASSETS = [
   './',
   './index.html',
-  './styles.css?v=9',
-  './library-media.css?v=9',
-  './workout-flow.css?v=9',
-  './loader.js?v=9',
+  './styles.css?v=10',
+  './library-media.css?v=10',
+  './workout-flow.css?v=10',
+  './loader.js?v=10',
   './library-media-patch.js',
   './manifest.webmanifest',
   './assets/icon.svg',
@@ -47,6 +47,7 @@ self.addEventListener('fetch', event => {
       url.pathname.endsWith('/loader.js') ||
       url.pathname.endsWith('/library-media-patch.js') ||
       url.pathname.endsWith('/workout-flow.css') ||
+      url.pathname.endsWith('/library-media.css') ||
       url.pathname.includes('/app-parts/') ||
       url.pathname.includes('/workout-flow-parts/');
 

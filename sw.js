@@ -1,4 +1,4 @@
-const CACHE = 'sportforma-v5';
+const CACHE = 'sportforma-v6';
 const PARTS = Array.from({ length: 7 }, (_, index) => `./app-parts/part${String(index).padStart(2, '0')}.txt`);
 const ASSETS = [
   './',

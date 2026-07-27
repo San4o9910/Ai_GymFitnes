@@ -1,0 +1,13 @@
+{
+  "name": "СпортФорма — персональная программа",
+  "short_name": "СпортФорма",
+  "description": "Персональная 12-недельная программа тренировок с адаптацией под самочувствие и физическую работу.",
+  "lang": "ru",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#050b08",
+  "theme_color": "#07130f",
+  "icons": [
+    {"src":"assets/icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}
+  ]
+}

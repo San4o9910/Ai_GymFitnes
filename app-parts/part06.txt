@@ -1,0 +1,22 @@
+econdary" target="_blank" rel="noopener" href="https://wger.de/">База wger</a></div></div>`;
+  modalBackdrop.hidden=false; document.body.style.overflow='hidden';
+}
+function showSafety(){
+  modalContent.innerHTML=`<h2 id="modalTitle">Если закружилась голова</h2><div class="safety" style="margin-top:14px"><div class="safety-icon">!</div><div><b>Сразу прекрати подход.</b><p class="muted">Сядь или ляг, не стой с тяжёлым весом. Дыши спокойно, пей воду небольшими глотками. Не продолжай тренировку в этот день.</p></div></div><ol class="tech-list"><li>Не делай резких движений и не вставай быстро.</li><li>Сообщи сотруднику зала или человеку рядом.</li><li>Если есть обморок, боль в груди, сильная одышка, выраженное сердцебиение, слабость или симптомы не проходят — нужна медицинская помощь.</li><li>Если эпизоды повторяются, обсуди их с врачом до повышения интенсивности.</li></ol><button class="btn primary full" data-close-modal>Понял</button>`;
+  modalBackdrop.hidden=false; document.body.style.overflow='hidden'; document.querySelector('[data-close-modal]').onclick=closeModal;
+}
+function closeModal(){modalBackdrop.hidden=true;document.body.style.overflow='';}
+modalClose.onclick=closeModal;modalBackdrop.onclick=e=>{if(e.target===modalBackdrop)closeModal();};
+
+function exportData(){
+  const blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`sportforma-backup-${todayISO()}.json`;a.click();URL.revokeObjectURL(a.href);
+}
+function importData(e){ const file=e.target.files[0];if(!file)return;const r=new FileReader();r.onload=()=>{try{state={...defaultState(),...JSON.parse(r.result)};saveState();toast('Данные импортированы');render();}catch{toast('Не удалось прочитать файл');}};r.readAsText(file); }
+function toast(msg){toastEl.textContent=msg;toastEl.hidden=false;clearTimeout(toastEl._t);toastEl._t=setTimeout(()=>toastEl.hidden=true,2200);}
+
+document.querySelectorAll('.nav-item').forEach(b=>b.onclick=()=>{state.route=b.dataset.route;state.activeWorkout=null;saveState();render();});
+window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredInstallPrompt=e;installBtn.hidden=false;});
+installBtn.onclick=async()=>{if(!deferredInstallPrompt)return;deferredInstallPrompt.prompt();await deferredInstallPrompt.userChoice;deferredInstallPrompt=null;installBtn.hidden=true;};
+if('serviceWorker' in navigator) window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));
+
+render();

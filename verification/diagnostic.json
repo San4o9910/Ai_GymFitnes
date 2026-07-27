@@ -1,8 +1,23 @@
 {
-  "ok": false,
-  "checkedAt": "2026-07-27T16:52:37.926Z",
-  "errors": [
-    "SyntaxError: Unexpected token ')'\n    at new Function (<anonymous>)\n    at [stdin]:14:3\n    at runScriptInThisContext (node:internal/vm:209:10)\n    at node:internal/process/execution:446:12\n    at [stdin]-wrapper:6:24\n    at runScriptInContext (node:internal/process/execution:444:60)\n    at evalFunction (node:internal/process/execution:279:30)\n    at evalTypeScript (node:internal/process/execution:291:3)\n    at node:internal/main/eval_stdin:53:5\n    at Socket.<anonymous> (node:internal/process/execution:201:5)"
-  ],
-  "checks": {}
+  "ok": true,
+  "checkedAt": "2026-07-27T16:53:23.633Z",
+  "errors": [],
+  "checks": {
+    "SportFormaHistoryDB": true,
+    "indexedDB.open": true,
+    "Начать упражнение": true,
+    "Завершить упражнение": true,
+    "История тренировок": true,
+    "totalSets": true,
+    "totalReps": true,
+    "volume": true,
+    "hydrateTechniqueMedia": true,
+    "FREE_EXERCISE_IMAGE_BASE": true,
+    "realisticSequence": true
+  },
+  "runtimeRepairApplied": true,
+  "mainBytes": 56951,
+  "mediaBytes": 9243,
+  "workoutFlowBytes": 24410,
+  "workoutFlowParts": 6
 }

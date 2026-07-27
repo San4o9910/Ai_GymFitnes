@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#07130f" />
+  <meta name="description" content="Персональная 12-недельная программа тренировок, адаптированная под физическую работу и набор спортивной формы." />
+  <title>СпортФорма — персональная программа</title>
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="icon" href="assets/icon.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <div>
+        <div class="eyebrow">ПЕРСОНАЛЬНАЯ ПРОГРАММА</div>
+        <h1>СпортФорма</h1>
+      </div>
+      <button class="icon-btn" id="installBtn" hidden aria-label="Установить приложение">＋</button>
+    </header>
+
+    <main id="app" class="content" aria-live="polite"></main>
+
+    <nav class="bottom-nav" aria-label="Основная навигация">
+      <button data-route="today" class="nav-item active"><span>⌂</span><small>Сегодня</small></button>
+      <button data-route="schedule" class="nav-item"><span>▦</span><small>Расписание</small></button>
+      <button data-route="progress" class="nav-item"><span>↗</span><small>Прогресс</small></button>
+      <button data-route="library" class="nav-item"><span>◉</span><small>Упражнения</small></button>
+      <button data-route="settings" class="nav-item"><span>⚙</span><small>Данные</small></button>
+    </nav>
+  </div>
+
+  <div class="modal-backdrop" id="modalBackdrop" hidden>
+    <section class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+      <button class="modal-close" id="modalClose" aria-label="Закрыть">×</button>
+      <div id="modalContent"></div>
+    </section>
+  </div>
+
+  <div class="toast" id="toast" hidden></div>
+  <script src="app.js" defer></script>
+</body>
+</html>

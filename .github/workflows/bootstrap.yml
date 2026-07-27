@@ -1,0 +1,65 @@
+name: Unpack SportForma application
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.bootstrap/**'
+      - '.github/workflows/bootstrap.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  unpack:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Skip when application is already unpacked
+        id: check
+        shell: bash
+        run: |
+          if [ -f index.html ] && [ -f app.js ]; then
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Rebuild and unpack application archive
+        if: steps.check.outputs.ready != 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat .bootstrap/part* | base64 --decode > /tmp/sportforma-pwa.zip
+          mkdir -p /tmp/sportforma-unpacked
+          unzip -q /tmp/sportforma-pwa.zip -d /tmp/sportforma-unpacked
+          SRC=/tmp/sportforma-unpacked/sportforma-pwa
+          cp "$SRC/index.html" ./index.html
+          cp "$SRC/app.js" ./app.js
+          cp "$SRC/styles.css" ./styles.css
+          cp "$SRC/sw.js" ./sw.js
+          cp "$SRC/manifest.webmanifest" ./manifest.webmanifest
+          cp "$SRC/start.sh" ./start.sh
+          cp "$SRC/start.bat" ./start.bat
+          mkdir -p assets
+          cp "$SRC/assets/icon.svg" ./assets/icon.svg
+          chmod +x start.sh
+          rm -rf .bootstrap
+
+      - name: Commit unpacked source files
+        if: steps.check.outputs.ready != 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          if git diff --cached --quiet; then
+            echo "Nothing to commit"
+          else
+            git commit -m "Add SportForma PWA application"
+            git push
+          fi

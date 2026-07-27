@@ -1,0 +1,63 @@
+name: Diagnose SportForma sections
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'app-parts/**'
+      - 'workout-flow-parts/**'
+      - 'library-media-patch.js'
+      - '.github/workflows/diagnose-sections.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  diagnose-sections:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Parse each assembled section
+        shell: bash
+        run: |
+          node <<'NODE'
+          const fs = require('fs');
+          const vm = require('vm');
+          const readParts = (dir) => fs.readdirSync(dir).filter(n => /^part\d+\.txt$/.test(n)).sort().map(n => fs.readFileSync(`${dir}/${n}`, 'utf8')).join('');
+          const sources = {
+            main: readParts('app-parts'),
+            media: fs.readFileSync('library-media-patch.js', 'utf8'),
+            workoutFlow: Buffer.from(readParts('workout-flow-parts'), 'base64').toString('utf8')
+          };
+          const report = { checkedAt: new Date().toISOString(), sections: {}, combined: null };
+          for (const [name, source] of Object.entries(sources)) {
+            try {
+              new vm.Script(source, { filename: `${name}.js` });
+              report.sections[name] = { ok: true, bytes: Buffer.byteLength(source) };
+            } catch (error) {
+              report.sections[name] = { ok: false, bytes: Buffer.byteLength(source), error: String(error.stack || error) };
+            }
+          }
+          try {
+            new vm.Script(`${sources.main}\n${sources.media}\n${sources.workoutFlow}`, { filename: 'combined.js' });
+            report.combined = { ok: true };
+          } catch (error) {
+            report.combined = { ok: false, error: String(error.stack || error) };
+          }
+          report.ok = Object.values(report.sections).every(x => x.ok) && report.combined.ok;
+          fs.mkdirSync('verification', { recursive: true });
+          fs.writeFileSync('verification/sections.json', JSON.stringify(report, null, 2) + '\n');
+          console.log(JSON.stringify(report, null, 2));
+          NODE
+      - name: Commit section report
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add verification/sections.json
+          if ! git diff --cached --quiet; then
+            git commit -m 'Record SportForma section diagnostics'
+            git push
+          fi

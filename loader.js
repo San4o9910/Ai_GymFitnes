@@ -29,11 +29,21 @@
         const encoded = (await Promise.all(flowParts.map(fetchText))).join('');
         const bytes = Uint8Array.from(atob(encoded), char => char.charCodeAt(0));
         workoutPatch = new TextDecoder('utf-8').decode(bytes);
+
+        // В первой версии пошагового режима в одной строке закодировалась
+        // опечатка querySelector*. Исправляем её до компиляции, чтобы не
+        // блокировать всё приложение и сохранённую историю тренировок.
+        workoutPatch = workoutPatch.replace(
+          "document.querySelector*'[data-sf-summary-history]').onclick",
+          "document.querySelector('[data-sf-summary-history]').onclick"
+        );
       } catch (error) {
         console.warn('Пошаговый режим тренировки временно недоступен:', error);
       }
 
-      // Оба дополнения выполняются в области видимости основного приложения.
+      // Все модули выполняются в одной области видимости: дополнения могут
+      // использовать exercises, renderWorkout, renderProgress и другие
+      // функции основного приложения.
       new Function(`${mainSource}\n${mediaPatch}\n${workoutPatch}`)();
     })
     .catch((error) => {

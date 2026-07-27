@@ -25,7 +25,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Diagnose assembled application
+      - name: Diagnose exact runtime assembly
         shell: bash
         run: |
           node <<'NODE'
@@ -40,21 +40,27 @@ jobs:
             const main = readParts('app-parts');
             const media = fs.readFileSync('library-media-patch.js', 'utf8');
             const flowEncoded = readParts('workout-flow-parts');
-            const flow = Buffer.from(flowEncoded, 'base64').toString('utf8');
-            const combined = `${main}\n${media}\n${flow}`;
+            const decodedFlow = Buffer.from(flowEncoded, 'base64').toString('utf8');
+            const repairedFlow = decodedFlow.replace(
+              "document.querySelector*'[data-sf-summary-history]').onclick",
+              "document.querySelector('[data-sf-summary-history]').onclick"
+            );
+            const combined = `${main}\n${media}\n${repairedFlow}`;
             new Function(combined);
             const tokens = [
               'SportFormaHistoryDB', 'indexedDB.open', 'Начать упражнение',
               'Завершить упражнение', 'История тренировок', 'totalSets',
-              'totalReps', 'volume', 'hydrateTechniqueMedia'
+              'totalReps', 'volume', 'hydrateTechniqueMedia',
+              'FREE_EXERCISE_IMAGE_BASE', 'realisticSequence'
             ];
             report.checks = Object.fromEntries(tokens.map(token => [token, combined.includes(token)]));
             const missing = tokens.filter(token => !report.checks[token]);
             if (missing.length) throw new Error(`Missing required tokens: ${missing.join(', ')}`);
             report.ok = true;
+            report.runtimeRepairApplied = repairedFlow !== decodedFlow;
             report.mainBytes = Buffer.byteLength(main);
             report.mediaBytes = Buffer.byteLength(media);
-            report.workoutFlowBytes = Buffer.byteLength(flow);
+            report.workoutFlowBytes = Buffer.byteLength(repairedFlow);
             report.workoutFlowParts = fs.readdirSync('workout-flow-parts').filter(name => /^part\d+\.txt$/.test(name)).length;
           } catch (error) {
             report.errors.push(String(error && error.stack ? error.stack : error));

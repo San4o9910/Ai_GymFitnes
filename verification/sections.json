@@ -1,0 +1,23 @@
+{
+  "checkedAt": "2026-07-27T16:46:33.663Z",
+  "sections": {
+    "main": {
+      "ok": true,
+      "bytes": 56951
+    },
+    "media": {
+      "ok": true,
+      "bytes": 9243
+    },
+    "workoutFlow": {
+      "ok": false,
+      "bytes": 24410,
+      "error": "workoutFlow.js:402\n    document.querySelector*'[data-sf-summary-history]').onclick = () => { state.route = 'progress'; saveState(); render(); };\n                                                      ^\n\nSyntaxError: Unexpected token ')'\n    at new Script (node:vm:117:7)\n    at [stdin]:12:5\n    at runScriptInThisContext (node:internal/vm:209:10)\n    at node:internal/process/execution:446:12\n    at [stdin]-wrapper:6:24\n    at runScriptInContext (node:internal/process/execution:444:60)\n    at evalFunction (node:internal/process/execution:279:30)\n    at evalTypeScript (node:internal/process/execution:291:3)\n    at node:internal/main/eval_stdin:53:5\n    at Socket.<anonymous> (node:internal/process/execution:201:5)"
+    }
+  },
+  "combined": {
+    "ok": false,
+    "error": "combined.js:927\n    document.querySelector*'[data-sf-summary-history]').onclick = () => { state.route = 'progress'; saveState(); render(); };\n                                                      ^\n\nSyntaxError: Unexpected token ')'\n    at new Script (node:vm:117:7)\n    at [stdin]:19:3\n    at runScriptInThisContext (node:internal/vm:209:10)\n    at node:internal/process/execution:446:12\n    at [stdin]-wrapper:6:24\n    at runScriptInContext (node:internal/process/execution:444:60)\n    at evalFunction (node:internal/process/execution:279:30)\n    at evalTypeScript (node:internal/process/execution:291:3)\n    at node:internal/main/eval_stdin:53:5\n    at Socket.<anonymous> (node:internal/process/execution:201:5)"
+  },
+  "ok": false
+}
